@@ -40,13 +40,15 @@ stackedDenistyPlot <- function(data, densityColNames, stackFactor,
                                reomoveOutliers = FALSE,
                                stackRotation = 0,
                                stackSeperation = "auto",
+                               scaleHeight = FALSE,
+                               scaleWidth = FALSE,
                                x_text_size = 2,
-                               strip_text_size = 7,
-                               legend_text_size = 0.5,
+                               strip_text_size = 8,
+                               legend_text_size = 0.8,
                                legendRow = 1,
                                legend_title = "stackName",
                                legend_title_size = 1,
-                               legend_key_size = 0.2){
+                               legend_key_size = 0.15){
 
 
     if(missing(stackFactor)){
@@ -86,8 +88,9 @@ stackedDenistyPlot <- function(data, densityColNames, stackFactor,
                        stackFactor = stackFactor,
                        check.names = FALSE)
 
-    densData <- densityCal(data, kernel = kernel, bw = bw,
-                            adjust = adjust, reomoveOutliers = reomoveOutliers)
+    densData <- densityCal(data, kernel = kernel, bw = bw, adjust = adjust,
+                           scaleHeight = scaleHeight, scaleWidth = scaleWidth,
+                           reomoveOutliers = reomoveOutliers)
 
     ## dataframe densData contains {stackName, x , y , densityName}
     xStat <- aggregate(x ~ stackName + densityName, densData, max)
@@ -178,6 +181,7 @@ stackedDenistyPlot <- function(data, densityColNames, stackFactor,
 #'
 #' @return data frame containing stackName, x, y and densityName
 #' @importFrom plyr ldply
+#' @importFrom scales rescale
 #'
 #' @examples
 #' data <- iris
@@ -186,7 +190,7 @@ stackedDenistyPlot <- function(data, densityColNames, stackFactor,
 #' dr <- densityCal(data = data)
 densityCal <- function(data, kernel = c("gaussian", "epanechnikov", "rectangular",
                                          "triangular", "biweight", "cosine", "optcosine"),
-                        bw = "nrd0", adjust = 1, reomoveOutliers = FALSE){
+                        bw = "nrd0", adjust = 1, scaleHeight = FALSE, scaleWidth = FALSE, reomoveOutliers = FALSE){
     cat("  Calculating Density for each stack column...\n")
     kernel <- match.arg(kernel)
     #print(table(data$stackFactor))
@@ -203,7 +207,15 @@ densityCal <- function(data, kernel = c("gaussian", "epanechnikov", "rectangular
                 x <- x[x >= x_lowLimit && x <= x_highLimit]
             }
             dens <- density(x, ...)
-            densOut <- data.frame(x=dens$x, y=dens$y, densityName = i)
+            dx <- dens$x
+            dy <- dens$y
+            if(scaleWidth){
+                dx <- rescale(dx, c(0,5))
+            }
+            if(scaleHeight){
+                dy <- rescale(dy, c(0,1))
+            }
+            densOut <- data.frame(x=dx, y=dy, densityName = i)
             resOut <- rbind(resOut, densOut)
         }
         return(resOut)
