@@ -4,7 +4,7 @@
 #' @param data Data frame containing columns for density calculation.
 #' @param densityColNames The column names of those passed to density calculation.
 #' @param stackFactor A factor to create the stacks, length equalt to number of rows in data.
-#' @param stackColor Default use rainbow colour palette, but can be specified manually.
+#' @param stackColor Default use ggplot2 gg_color_hue colour palette, but can be specified manually.
 #' @param kernel kernel applied for density calculation, includes "gaussian", "epanechnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine".
 #' @param bw The smoothing bandwidth to be used. The default, "nrd0", has remained the default for historical and compatibility reasons, rather than as a general recommendation, where e.g., "SJ" would rather fit.
 #' @param adjust The bandwidth used is actually adjust*bw.
@@ -74,15 +74,6 @@ stackedDenistyPlot <- function(data, densityColNames, stackFactor,
 
     stackCount <- length(unique(stackFactor))
     densityCount <- length(densityColNames)
-
-    ## set the color of stacks
-    if(missing(stackColor)){
-        stackColor <- rainbow(stackCount)
-    }else if(length(stackColor) != stackCount){
-        stop("Color provided for stacks doesn't match the number of stacks,
-             please check your stackColor parameter!")
-    }
-
 
     data <- data.frame(data[ ,densityColNames, drop=FALSE],
                        stackFactor = stackFactor,
@@ -159,10 +150,19 @@ stackedDenistyPlot <- function(data, densityColNames, stackFactor,
                   hjust = 0.3, vjust = 1.1, size = x_text_size) +
         geom_polygon(aes(fill=stackName, color=stackName), alpha = 0.15) +
         facet_wrap(~densityName, scale = "free") +
-        xlab("") + ylab("") +
-        scale_fill_manual(values=stackColor) + scale_colour_manual(values=stackColor) +
-        guides(col = guide_legend(title = legend_title, nrow = legendRow, byrow = TRUE),
-               fill = guide_legend(title = legend_title, nrow = legendRow, byrow = TRUE)) +
+        xlab("") + ylab("")
+
+    ## set the color of stacks
+    if(!missing(stackColor)){
+        if(length(stackColor) == stackCount){
+            gp <- gp + scale_fill_manual(values=stackColor) + scale_colour_manual(values=stackColor)
+        }else{
+            warning("Color provided for stacks doesn't match the number of stacks, change to use default colour palette!")
+        }
+    }
+
+    gp <- gp + guides(col = guide_legend(title = legend_title, nrow = legendRow, byrow = TRUE),
+                      fill = guide_legend(title = legend_title, nrow = legendRow, byrow = TRUE)) +
         theme_bw() + stackDensityPlot_theme
 
     return(gp)
@@ -227,7 +227,4 @@ densityCal <- function(data, kernel = c("gaussian", "epanechnikov", "rectangular
                .id = "stackName")
     return(r)
 }
-
-
-
 
