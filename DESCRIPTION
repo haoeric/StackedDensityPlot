@@ -1,0 +1,17 @@
+Package: StackedDensityPlot
+Type: Package
+Title: Build Overlapping Stacked Denisty Plot
+Version: 0.1.0
+Author: Hao Chen
+Maintainer: Hao Chen <chen_hao@immunol.a-star.edu.sg>
+Description: A flexible and easy-to-use function for building stacked density plot using ggplot2 package, supporting plotting of multiple variables visiualized in separate panels. 
+License: GPL-3
+Encoding: UTF-8
+Depends:
+    R (>= 2.10.0), ggplot2
+VignetteBuilder: knitr
+Imports:
+    plyr,
+    reshape2
+LazyData: true
+RoxygenNote: 6.0.1
